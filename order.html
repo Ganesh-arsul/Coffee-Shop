@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafe Management System</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .card-img-top {
+            width: 100%; /* Makes the image responsive */
+            height: 300px; /* Fixed height */
+            object-fit: cover; /* Ensures the image scales and crops without distortion */
+        }
+    </style>    
+</head>
+<body>
+
+<div class="container mt-4">
+    <h2>Coffee Order System</h2>
+
+    <!-- Search Bar -->
+    <input type="text" id="searchBar" class="form-control mb-4" placeholder="Search for a coffee..." onkeyup="searchCoffee()">
+   
+    <!-- Coffee Menu -->
+    <div id="coffeeMenu" class="row">
+        <!-- Coffee items will be dynamically added here -->
+    </div>
+
+    <!-- Order Summary -->
+    <div class="mt-4" id="receiptOutput">
+        <!-- Order summary will be displayed here -->
+    </div>
+
+    <!-- Generate Order Button -->
+    <button class="btn btn-primary mt-4" onclick="generateOrderSummary()">Generate Order Summary</button>
+    <button class="btn btn-success mt-4" onclick="submitOrder()">Submit Order</button> <!-- New Submit Button -->
+</div>
+
+<script>
+const coffeeVarieties = [
+    { name: "Espresso", size: "Small", price: 164 ,image: "images/espresso.jpeg"},
+    { name: "Latte", size: "Medium", price: 287, image: "images/Latte.jpeg"},
+    { name: "Cappuccino", size: "Large", price: 369 , image: "images/Cappuccino.jpeg"},
+    { name: "Mocha", size: "Medium", price: 420 , image: "images/Mocha.jpeg"},
+    { name: "Americano", size: "Small", price: 200 , image: "images/Americano.jpeg"},
+    { name: "Macchiato", size: "Large", price: 300 , image: "images/Macchiato.jpeg"},
+    { name: "Flat White", size: "Small", price: 210 , image: "images/Flat White.jpeg"},
+    { name: "Irish Coffee", size: "Medium", price: 450 , image: "images/Irish Coffee.jpeg"},
+    { name: "Affogato", size: "Large", price: 500 , image: "images/Affogato.jpeg"},
+    { name: "Cold Brew", size: "Medium", price: 320 , image: "images/Cold Brew.jpeg"},
+    { name: "Frappe", size: "Large", price: 350 , image: "images/Frappe.jpeg"},
+    { name: "Ristretto", size: "Small", price: 190 , image: "images/Ristretto.jpeg"},
+    { name: "Doppio", size: "Medium", price: 275 , image: "images/Doppio.jpeg"},
+    { name: "Lungo", size: "Large", price: 330 , image: "images/Lungo.jpeg"},
+    { name: "Café au Lait", size: "Medium", price: 295 , image: "images/Café au Lait.jpeg"},
+    { name: "Cortado", size: "Small", price: 210 , image: "images/Cortado.jpeg"},
+    { name: "Red Eye", size: "Large", price: 400 , image: "images/Red Eye.jpeg"},
+    { name: "Vienna", size: "Medium", price: 310 , image: "images/Vienna.jpeg"},
+    { name: "Turkish Coffee", size: "Small", price: 220 , image: "images/Turkish Coffee.jpeg"},
+    { name: "Nitro Cold Brew", size: "Large", price: 450 , image: "images/Nitro Cold Brew.jpeg"},
+    { name: "Iced Americano", size: "Medium", price: 250 , image: "images/Iced Americano.jpeg"},
+    { name: "Caramel Macchiato", size: "Large", price: 430 , image: "images/Caramel Macchiato.jpeg"},
+    { name: "Pumpkin Spice Latte", size: "Medium", price: 410 , image: "images/Pumpkin Spice Latte.jpeg"},
+    { name: "Hazelnut Latte", size: "Large", price: 440 , image: "images/Hazelnut Latte.jpeg"},
+    { name: "Cinnamon Dolce Latte", size: "Medium", price: 415 , image: "images/Cinnamon Dolce Latte.jpeg"},
+    { name: "Chai Latte", size: "Small", price: 230 , image: "images/Chai Latte.jpeg"},
+    { name: "Peppermint Mocha", size: "Large", price: 470 , image: "images/Peppermint Mocha.jpeg"},
+    { name: "Toffee Nut Latte", size: "Medium", price: 430 , image: "images/Toffee Nut Latte.jpeg"},
+    { name: "White Chocolate Mocha", size: "Large", price: 490 , image: "images/White Chocolate Mocha.jpeg"},
+    { name: "Dark Roast", size: "Small", price: 180 , image: "images/Dark Roast.jpeg"}
+];
+
+
+let orderItems = [];
+
+// Function to display all coffee items
+function displayCoffeeItems(coffees) {
+    const coffeeMenu = document.getElementById("coffeeMenu");
+    coffeeMenu.innerHTML = '';
+    coffees.forEach((coffee, index) => {
+        coffeeMenu.innerHTML += `
+            <div class="col-md-4 item">
+                <div class="card">
+                    <img src="${coffee.image}" class="card-img-top" alt="${coffee.name}">
+                    <div class="card-body">
+                        <h5 class="card-title">${coffee.name} (${coffee.size})</h5>
+                        <p class="card-text">Price: ₹${coffee.price.toFixed(2)}</p>
+                        <input type="number" class="form-control mb-2" placeholder="Quantity" min="0" id="coffeeQty${index}">
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+
+// Function to filter coffee items based on search
+function searchCoffee() {
+    const searchTerm = document.getElementById("searchBar").value.toLowerCase();
+    const filteredCoffees = coffeeVarieties.filter(coffee => 
+        coffee.name.toLowerCase().includes(searchTerm)
+    );
+    displayCoffeeItems(filteredCoffees);
+}
+
+// Function to generate the order summary
+function generateOrderSummary() {
+    let total = 0;
+    orderItems = [];
+
+    coffeeVarieties.forEach((coffee, index) => {
+        const qty = parseInt(document.getElementById(`coffeeQty${index}`).value) || 0;
+        if (qty > 0) {
+            const cost = qty * coffee.price;
+            total += cost;
+            orderItems.push({
+                id: `${coffee.name}-${coffee.size}-${Date.now()}`,
+                name: coffee.name,
+                size: coffee.size,
+                quantity: qty,
+                price: coffee.price,
+                total: cost,
+            });
+        }
+    });
+
+    displayOrderSummary(total);
+}
+
+// Function to display the order summary
+function displayOrderSummary(total) {
+    const receiptOutput = document.getElementById("receiptOutput");
+    receiptOutput.innerHTML = '';
+    
+    let receiptContent = `<h5>Order Summary:</h5>`;
+    orderItems.forEach((item, index) => {
+        receiptContent += `
+            <div class="border p-2 mb-2" id="orderItem-${index}">
+                <p>Name: ${item.name}<br>
+                Size: ${item.size}<br>
+                Quantity: ${item.quantity}<br>
+                Price: ₹${item.price.toFixed(2)}<br>
+                Total: ₹${item.total.toFixed(2)}</p>
+                <button class="btn btn-danger btn-sm" onclick="deleteOrderItem(${index})">Delete</button>
+            </div>
+        `;
+    });
+    receiptContent += `<h5>Grand Total: ₹${total.toFixed(2)}</h5>`;
+    receiptOutput.innerHTML = receiptContent;
+}
+
+// Function to delete an order item
+function deleteOrderItem(index) {
+    if (index < 0 || index >= orderItems.length) return;
+    orderItems.splice(index, 1);
+    displayOrderSummary(orderItems.reduce((total, item) => total + item.total, 0));
+}
+
+// Function to get the total price
+function getTotal() {
+    return orderItems.reduce((total, item) => total + item.total, 0);
+}
+
+// Function to submit the order
+// Function to submit the order
+function submitOrder() {
+    const phoneNumber = localStorage.getItem('phoneNumber');  // Retrieve phone number
+    const orderData = { 
+        phone_number: phoneNumber,  // Include phone number
+        orders: orderItems,
+        total: getTotal()
+    };
+
+    fetch('http://localhost:5000/submit_order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+    })
+    .then(response => response.ok ? response.json() : Promise.reject('Failed to save order'))
+    .then(data => {
+        alert('Order saved successfully!');
+        window.location.href = 'index.html';  // Redirect to index page
+    })
+    .catch(error => alert('Error saving order!'));
+}
+
+
+
+
+// Initialize the menu display
+displayCoffeeItems(coffeeVarieties);
+
+</script>
+
+</body>
+</html>
