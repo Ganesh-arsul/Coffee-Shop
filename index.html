@@ -3,106 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coffee Management System - Login</title>
+    <title>Login Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<style>
-    /* Background image styling */
-    body {
-        background-image: url('download.jpeg');
+    <style>
+        /* Center the login container vertically */
+        .login-container {
+            max-width: 400px;
+            margin: auto;
+            padding: 2rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        body {
+        background-image: url('log.webp');
         background-size: cover;
         background-position: center;
         background-repeat: no-repeat;
         background-attachment: fixed;
     }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center vh-100 bg-light">
 
-    #allOrdersOutput {
-        background-color: aliceblue;
-        color: black;
-        padding: 15px;
-        border-radius: 8px;
-        margin-top: 20px;
-    }
-</style>
-<body>
-
-<!-- Phone Number Input Container -->
-<div class="container d-flex align-items-center justify-content-center vh-100">
-    <div class="text-center p-5 shadow-lg bg-light rounded">
-        <h1 class="mb-4">Welcome to Cafe Management</h1>
-        <p>Please enter your phone number to continue</p>
+    <!-- Login Container -->
+    <div class="login-container">
+        <h2 class="text-center mb-4">Login</h2>
         
-        <!-- Phone Number Form -->
-        <form onsubmit="navigateToOrderPage(event)">
+        <!-- Login Form -->
+        <form onsubmit="validateLogin(event)">
             <div class="mb-3">
-                <input type="tel" class="form-control" id="phoneNumber" placeholder="Enter your phone number" required pattern="^\+91[0-9]{10}$" maxlength="13" value="+91" oninput="validatePhoneNumber(this)">
-            </div>                       
-            <button type="submit" class="btn btn-primary">Next</button>
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" placeholder="Enter your username" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="text-danger text-center mt-3" style="display: none;">
+            Invalid username or password.
+        </div>
     </div>
-</div>
 
-<!-- Button and Search Bar -->
-<button class="btn btn-info mt-4" onclick="fetchAllOrders()">Show All Orders</button>
-<input type="text" id="searchBar" class="form-control mb-4 p-2 m-2" placeholder="Search for orders by phone number..." onkeyup="searchOrdersByPhone()" maxlength="13" style="width: 250px;">
+    <!-- Script for login validation -->
+    <script>
+        function validateLogin(event) {
+            event.preventDefault();
 
-<!-- Display Orders -->
-<div id="allOrdersOutput" class="mt-4">
-    <!-- All orders will be displayed here -->
-</div>
+            // Get username and password inputs
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
 
-<script>
-    let allOrders = []; // Store all orders to be searched
+            // Set fixed username and password
+            const fixedUsername = 'admin';
+            const fixedPassword = 'password123';
 
-    // Function to fetch all orders from the server
-    function fetchAllOrders() {
-        // Fetch all orders from the server
-        fetch('http://localhost:5000/get_orders')
-        .then(response => response.json())
-        .then(data => {
-            allOrders = data.orders || []; // Store the fetched orders
-            displayOrders(allOrders); // Display all orders initially
-        })
-        .catch(error => alert('Error fetching orders!'));
-    }
-
-    // Function to display orders
-    function displayOrders(orders) {
-        const allOrdersOutput = document.getElementById('allOrdersOutput');
-        allOrdersOutput.innerHTML = `<h5>All Orders</h5>`;
-         
-        if (orders && orders.length > 0) {
-            orders.forEach(order => {
-                allOrdersOutput.innerHTML += `
-                    <div class="border p-2 mb-2">
-                        <p>Order ID: ${order.id}<br>
-                        Phone Number: ${order.phone_number}<br>
-                        Items: ${order.coffee_name}<br>
-                        Total: ₹${order.total}</p>
-                    </div>
-                `;
-            });
-        } else {
-            allOrdersOutput.innerHTML += '<p>No orders found.</p>';
+            // Check if input matches fixed credentials
+            if (username === fixedUsername && password === fixedPassword) {
+                alert('Login successful!');
+                window.location.href = 'home.html'; // Redirect to index.html upon success
+             } else {
+                document.getElementById('errorMessage').style.display = 'block';
+            }
         }
-    }
-
-    // Search function for filtering orders by phone number
-    function searchOrdersByPhone() {
-        const searchTerm = document.getElementById("searchBar").value.trim(); // Get the value from the search bar
-        const filteredOrders = allOrders.filter(order => 
-            order.phone_number.includes(searchTerm) // Filter orders by phone number
-        );
-        displayOrders(filteredOrders); // Display filtered orders
-    }
-
-    // Navigate to the order page and pass the phone number
-    function navigateToOrderPage(event) {
-        event.preventDefault();
-        const phoneNumber = document.getElementById('phoneNumber').value;
-        localStorage.setItem('phoneNumber', phoneNumber);  // Store phone number
-        window.location.href = 'order.html';  // Navigate to order page
-    }
-</script>
+    </script>
 </body>
 </html>
